@@ -1,0 +1,27 @@
+{
+  "browser": "Chrome",
+  "version": "120.0.6099.131",
+  "os": "Windows 10",
+  "gpu": {
+    "vendor": "NVIDIA",
+    "model": "GeForce RTX 3060",
+    "driver": "31.0.15.3667"
+  },
+  "flags": {
+    "hardware-acceleration": false,
+    "webgl": true,
+    "vulkan": false,
+    "experimental-canvas": true
+  },
+  "extensions": [
+    { "id": "ext-001", "name": "uBlock Origin", "enabled": true },
+    { "id": "ext-002", "name": "LastPass", "enabled": false },
+    { "id": "ext-004", "name": "Grammarly", "enabled": true }
+  ],
+  "network": {
+    "proxy": "http://proxy.corp:8080",
+    "dns": "custom",
+    "doh": true
+  },
+  "experiments": ["feature-a", "feature-b"]
+}

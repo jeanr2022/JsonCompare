@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Compare — Demo</title>
+  <link rel="stylesheet" href="style/json-compare.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1f2328;
+      padding: 24px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      color: #656d76;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .input-area > div {
+      flex: 1;
+    }
+
+    .input-area label {
+      display: block;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: #1f2328;
+    }
+
+    textarea {
+      width: 100%;
+      height: 260px;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      font-size: 12px;
+      padding: 10px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      resize: vertical;
+      background: #fff;
+      color: #1f2328;
+    }
+
+    textarea:focus {
+      outline: 2px solid #0969da;
+      border-color: #0969da;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    button {
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #0969da;
+      color: white;
+    }
+
+    button:hover {
+      background: #0550ae;
+    }
+
+    .options {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      font-size: 13px;
+      color: #656d76;
+    }
+
+    .options label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .options input[type="number"] {
+      width: 50px;
+      padding: 2px 6px;
+      border: 1px solid #d0d7de;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .stats {
+      font-size: 13px;
+      color: #656d76;
+      margin-bottom: 12px;
+    }
+
+    .stats span {
+      margin-right: 12px;
+    }
+
+    .stats .stat-equal { color: #1a7f37; }
+    .stats .stat-changed { color: #9a6700; }
+    .stats .stat-added { color: #0969da; }
+    .stats .stat-removed { color: #cf222e; }
+
+    #output {
+      margin-top: 8px;
+    }
+
+    .error {
+      background: #ffebe9;
+      color: #82071e;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #0d1117; color: #e6edf3; }
+      textarea { background: #161b22; color: #e6edf3; border-color: #30363d; }
+      textarea:focus { outline-color: #58a6ff; border-color: #58a6ff; }
+      .subtitle { color: #7d8590; }
+      .input-area label { color: #e6edf3; }
+      button { background: #238636; }
+      button:hover { background: #2ea043; }
+      .options { color: #7d8590; }
+      .options input[type="number"] { background: #161b22; color: #e6edf3; border-color: #30363d; }
+      .stats { color: #7d8590; }
+      .error { background: #2d1215; color: #f85149; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>JSON Compare</h1>
+  <p class="subtitle">Side-by-side JSON diff — paste two JSON files to compare</p>
+
+  <div class="input-area">
+    <div>
+      <label for="jsonA">JSON A (Left — e.g. working config)</label>
+      <textarea id="jsonA" spellcheck="false" placeholder="Paste JSON here..."></textarea>
+    </div>
+    <div>
+      <label for="jsonB">JSON B (Right — e.g. broken config)</label>
+      <textarea id="jsonB" spellcheck="false" placeholder="Paste JSON here..."></textarea>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button id="compareBtn">Compare</button>
+    <div class="options">
+      <label>
+        Fold threshold:
+        <input type="number" id="foldThreshold" value="5" min="0" max="9999">
+      </label>
+      <label>
+        <input type="checkbox" id="syntaxHL" checked>
+        Syntax highlighting
+      </label>
+      <label>
+        <input type="checkbox" id="sortKeys">
+        Sort keys
+      </label>
+    </div>
+  </div>
+
+  <div id="statsBar" class="stats" style="display: none;"></div>
+  <div id="output"></div>
+
+  <script type="module">
+    import { compareAndRender } from './src/index.js';
+
+    // Load sample data
+    const sampleA = {
+      browser: "Chrome",
+      version: "120.0.6099.130",
+      os: "Windows 10",
+      gpu: {
+        vendor: "NVIDIA",
+        model: "GeForce RTX 3060",
+        driver: "31.0.15.3623"
+      },
+      flags: {
+        "hardware-acceleration": true,
+        webgl: true,
+        vulkan: false
+      },
+      extensions: [
+        { id: "ext-001", name: "uBlock Origin", enabled: true },
+        { id: "ext-002", name: "LastPass", enabled: true },
+        { id: "ext-003", name: "React DevTools", enabled: false }
+      ],
+      network: { proxy: "none", dns: "system" }
+    };
+
+    const sampleB = {
+      browser: "Chrome",
+      version: "120.0.6099.131",
+      os: "Windows 10",
+      gpu: {
+        vendor: "NVIDIA",
+        model: "GeForce RTX 3060",
+        driver: "31.0.15.3667"
+      },
+      flags: {
+        "hardware-acceleration": false,
+        webgl: true,
+        vulkan: false,
+        "experimental-canvas": true
+      },
+      extensions: [
+        { id: "ext-001", name: "uBlock Origin", enabled: true },
+        { id: "ext-002", name: "LastPass", enabled: false },
+        { id: "ext-004", name: "Grammarly", enabled: true }
+      ],
+      network: { proxy: "http://proxy.corp:8080", dns: "custom", doh: true },
+      experiments: ["feature-a", "feature-b"]
+    };
+
+    const jsonAEl = document.getElementById('jsonA');
+    const jsonBEl = document.getElementById('jsonB');
+
+    // Pre-fill with sample data
+    jsonAEl.value = JSON.stringify(sampleA, null, 2);
+    jsonBEl.value = JSON.stringify(sampleB, null, 2);
+
+    document.getElementById('compareBtn').addEventListener('click', () => {
+      const outputEl = document.getElementById('output');
+      const statsBar = document.getElementById('statsBar');
+
+      try {
+        const a = jsonAEl.value.trim();
+        const b = jsonBEl.value.trim();
+
+        if (!a || !b) {
+          outputEl.innerHTML = '<div class="error">Please paste JSON in both fields.</div>';
+          statsBar.style.display = 'none';
+          return;
+        }
+
+        // Validate JSON
+        JSON.parse(a);
+        JSON.parse(b);
+
+        const foldThreshold = parseInt(document.getElementById('foldThreshold').value, 10);
+        const syntaxHighlight = document.getElementById('syntaxHL').checked;
+        const sortKeys = document.getElementById('sortKeys').checked;
+
+        const result = compareAndRender(a, b, {
+          foldThreshold: isNaN(foldThreshold) ? 5 : foldThreshold,
+          syntaxHighlight,
+          sortKeys
+        });
+
+        const s = result.stats;
+        statsBar.innerHTML =
+          `<span><strong>${s.total}</strong> lines total</span>` +
+          `<span class="stat-equal"><strong>${s.equal}</strong> equal</span>` +
+          `<span class="stat-changed"><strong>${s.changed}</strong> changed</span>` +
+          `<span class="stat-added"><strong>${s.added}</strong> added</span>` +
+          `<span class="stat-removed"><strong>${s.removed}</strong> removed</span>`;
+        statsBar.style.display = 'block';
+
+        outputEl.innerHTML = result.html;
+      } catch (err) {
+        outputEl.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+        statsBar.style.display = 'none';
+      }
+    });
+
+    // Auto-compare on load with sample data
+    document.getElementById('compareBtn').click();
+  </script>
+</body>
+</html>

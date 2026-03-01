@@ -1,0 +1,24 @@
+{
+  "browser": "Chrome",
+  "version": "120.0.6099.130",
+  "os": "Windows 10",
+  "gpu": {
+    "vendor": "NVIDIA",
+    "model": "GeForce RTX 3060",
+    "driver": "31.0.15.3623"
+  },
+  "flags": {
+    "hardware-acceleration": true,
+    "webgl": true,
+    "vulkan": false
+  },
+  "extensions": [
+    { "id": "ext-001", "name": "uBlock Origin", "enabled": true },
+    { "id": "ext-002", "name": "LastPass", "enabled": true },
+    { "id": "ext-003", "name": "React DevTools", "enabled": false }
+  ],
+  "network": {
+    "proxy": "none",
+    "dns": "system"
+  }
+}

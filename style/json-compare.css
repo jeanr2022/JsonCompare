@@ -1,0 +1,310 @@
+/* ============================================================
+   json-compare — Side-by-Side JSON Diff Styles
+   ============================================================ */
+
+/* ---------- Container & Table ---------- */
+
+.jc-container {
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: auto;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f2328;
+}
+
+.jc-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.jc-col-num {
+  width: 50px;
+}
+
+.jc-col-content {
+  width: calc(50% - 52px);
+}
+
+.jc-col-gutter {
+  width: 4px;
+}
+
+/* ---------- Rows ---------- */
+
+.jc-row {
+  border-bottom: 1px solid #eaeef2;
+}
+
+.jc-row:last-child {
+  border-bottom: none;
+}
+
+/* ---------- Line Numbers ---------- */
+
+.jc-line-num {
+  padding: 0 8px;
+  text-align: right;
+  color: #656d76;
+  user-select: none;
+  vertical-align: top;
+  white-space: nowrap;
+  font-size: 12px;
+  border-right: 1px solid #eaeef2;
+  background: #f6f8fa;
+  min-width: 40px;
+}
+
+/* ---------- Gutter (center divider) ---------- */
+
+.jc-gutter {
+  background: #d0d7de;
+  padding: 0;
+  width: 4px;
+  min-width: 4px;
+  max-width: 4px;
+}
+
+/* ---------- Content Cells ---------- */
+
+.jc-content {
+  padding: 0 12px;
+  vertical-align: top;
+  white-space: pre;
+  overflow-x: auto;
+  word-break: break-all;
+}
+
+.jc-content pre {
+  margin: 0;
+  padding: 2px 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre;
+  background: transparent;
+}
+
+/* ---------- Diff Type Backgrounds ---------- */
+
+.jc-equal {
+  background: #ffffff;
+}
+
+.jc-added {
+  background: #dafbe1;
+}
+
+.jc-removed {
+  background: #ffebe9;
+}
+
+.jc-changed {
+  background: #fff8c5;
+}
+
+.jc-empty {
+  background: #f6f8fa;
+}
+
+/* Row-level highlights for left/right context */
+.jc-row-added .jc-line-num {
+  background: #ccffd8;
+  color: #116329;
+}
+
+.jc-row-removed .jc-line-num {
+  background: #ffd7d5;
+  color: #82071e;
+}
+
+.jc-row-changed .jc-line-num {
+  background: #fef3cd;
+  color: #6b5900;
+}
+
+/* ---------- Syntax Highlighting ---------- */
+
+.jc-key {
+  color: #0550ae;
+  font-weight: 600;
+}
+
+.jc-string {
+  color: #0a3069;
+}
+
+.jc-number {
+  color: #0550ae;
+}
+
+.jc-bool {
+  color: #cf222e;
+  font-weight: 600;
+}
+
+.jc-null {
+  color: #6e7781;
+  font-style: italic;
+}
+
+.jc-brace {
+  color: #1f2328;
+}
+
+.jc-comma {
+  color: #1f2328;
+}
+
+/* ---------- Fold / Collapse ---------- */
+
+.jc-fold-row {
+  border-bottom: 1px solid #eaeef2;
+}
+
+.jc-fold-cell {
+  padding: 0;
+  background: #f6f8fa;
+}
+
+.jc-fold-summary {
+  cursor: pointer;
+  padding: 4px 12px;
+  color: #656d76;
+  font-size: 12px;
+  user-select: none;
+  text-align: center;
+  background: #ddf4ff;
+  border-top: 1px solid #54aeff66;
+  border-bottom: 1px solid #54aeff66;
+}
+
+.jc-fold-summary:hover {
+  background: #b6e3ff;
+  color: #0550ae;
+}
+
+.jc-fold-inner {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+details[open] > .jc-fold-summary {
+  border-bottom: 1px solid #eaeef2;
+}
+
+/* ---------- Dark Mode ---------- */
+
+@media (prefers-color-scheme: dark) {
+  .jc-container {
+    background: #0d1117;
+    color: #e6edf3;
+    border-color: #30363d;
+  }
+
+  .jc-row {
+    border-bottom-color: #21262d;
+  }
+
+  .jc-line-num {
+    background: #161b22;
+    color: #7d8590;
+    border-right-color: #21262d;
+  }
+
+  .jc-gutter {
+    background: #30363d;
+  }
+
+  .jc-equal {
+    background: #0d1117;
+  }
+
+  .jc-added {
+    background: #12261e;
+  }
+
+  .jc-removed {
+    background: #2d1215;
+  }
+
+  .jc-changed {
+    background: #2e2a10;
+  }
+
+  .jc-empty {
+    background: #161b22;
+  }
+
+  .jc-row-added .jc-line-num {
+    background: #122d1f;
+    color: #3fb950;
+  }
+
+  .jc-row-removed .jc-line-num {
+    background: #331a1d;
+    color: #f85149;
+  }
+
+  .jc-row-changed .jc-line-num {
+    background: #332e12;
+    color: #d29922;
+  }
+
+  /* Syntax highlighting — dark */
+  .jc-key {
+    color: #79c0ff;
+  }
+
+  .jc-string {
+    color: #a5d6ff;
+  }
+
+  .jc-number {
+    color: #79c0ff;
+  }
+
+  .jc-bool {
+    color: #ff7b72;
+  }
+
+  .jc-null {
+    color: #7d8590;
+  }
+
+  .jc-brace {
+    color: #e6edf3;
+  }
+
+  .jc-comma {
+    color: #e6edf3;
+  }
+
+  /* Fold — dark */
+  .jc-fold-cell {
+    background: #161b22;
+  }
+
+  .jc-fold-summary {
+    background: #1a2332;
+    border-color: #1f6feb66;
+    color: #7d8590;
+  }
+
+  .jc-fold-summary:hover {
+    background: #1a3352;
+    color: #79c0ff;
+  }
+
+  details[open] > .jc-fold-summary {
+    border-bottom-color: #21262d;
+  }
+
+  .jc-fold-row {
+    border-bottom-color: #21262d;
+  }
+}

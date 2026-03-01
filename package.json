@@ -1,0 +1,24 @@
+{
+  "name": "json-compare",
+  "version": "1.0.0",
+  "description": "Zero-dependency side-by-side JSON diff with syntax highlighting, line numbers, and collapsible sections.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./style.css": "./style/json-compare.css"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/run-all.js"
+  },
+  "keywords": [
+    "json",
+    "diff",
+    "compare",
+    "side-by-side",
+    "chromium",
+    "diagnostics"
+  ],
+  "license": "MIT"
+}
