@@ -143,9 +143,9 @@ Convenience shorthand that calls `compare()` then `renderHTML()`.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `sortKeys` | `boolean` | `false` | Sort object keys alphabetically. Default preserves original order. |
-| `foldThreshold` | `number` | `5` | Consecutive equal lines before collapsing. `0` = fold all. `Infinity` = no folding. |
-| `syntaxHighlight` | `boolean` | `true` | Color-code JSON tokens (keys, strings, numbers, etc.) |
+| `sortKeys` | `boolean` | `false` | Sort object keys alphabetically before comparing. When `false` (default), keys appear in the same order as your source file. When `true`, both sides are sorted so structurally identical objects always align the same way regardless of key order in the original JSON. |
+| `foldThreshold` | `number` | `5` | Consecutive equal lines before collapsing. `0` = fold all unchanged sections. `Infinity` = no folding. |
+| `syntaxHighlight` | `boolean` | `true` | Color-code JSON tokens in the output: keys are bold blue, strings are dark blue, numbers are blue, booleans are red, and `null` is italic gray. When `false`, all text is rendered in a single plain color. |
 
 ### `LinePair` Object
 
