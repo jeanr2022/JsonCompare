@@ -65,6 +65,11 @@
       border-color: #0969da;
     }
 
+    .drop-zone.drag-over textarea {
+      border-color: #0969da;
+      background: #ddf4ff;
+    }
+
     .toolbar {
       display: flex;
       align-items: center;
@@ -215,22 +220,23 @@
       .loading-overlay { background: rgba(13,17,23,0.85); }
       .spinner { border-color: #30363d; border-top-color: #58a6ff; }
       .loading-text { color: #7d8590; }
+      .drop-zone.drag-over textarea { border-color: #58a6ff; background: #1a2332; }
     }
   </style>
 </head>
 <body>
 
   <h1>JSON Compare</h1>
-  <p class="subtitle">Side-by-side JSON diff — paste two JSON files to compare</p>
+  <p class="subtitle">Side-by-side JSON diff: paste or drag & drop JSON files to compare</p>
 
   <div class="input-area">
-    <div>
-      <label for="jsonA">JSON A (Left — e.g. working config)</label>
-      <textarea id="jsonA" spellcheck="false" placeholder="Paste JSON here..."></textarea>
+    <div class="drop-zone" id="dropZoneA">
+      <label for="jsonA">JSON A (Left, e.g. working config)</label>
+      <textarea id="jsonA" spellcheck="false" placeholder="Paste or drop a .json file here..."></textarea>
     </div>
-    <div>
-      <label for="jsonB">JSON B (Right — e.g. broken config)</label>
-      <textarea id="jsonB" spellcheck="false" placeholder="Paste JSON here..."></textarea>
+    <div class="drop-zone" id="dropZoneB">
+      <label for="jsonB">JSON B (Right, e.g. broken config)</label>
+      <textarea id="jsonB" spellcheck="false" placeholder="Paste or drop a .json file here..."></textarea>
     </div>
   </div>
 
@@ -461,6 +467,31 @@
         nextBtn.click();
       }
     });
+
+    // Drag & drop support
+    function setupDropZone(zoneId, textareaEl) {
+      const zone = document.getElementById(zoneId);
+      ['dragenter', 'dragover'].forEach(evt => {
+        zone.addEventListener(evt, (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+      });
+      ['dragleave', 'drop'].forEach(evt => {
+        zone.addEventListener(evt, () => { zone.classList.remove('drag-over'); });
+      });
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          textareaEl.value = reader.result;
+          // Auto-compare if both fields have content
+          if (jsonAEl.value.trim() && jsonBEl.value.trim()) compareBtn.click();
+        };
+        reader.readAsText(file);
+      });
+    }
+    setupDropZone('dropZoneA', jsonAEl);
+    setupDropZone('dropZoneB', jsonBEl);
 
     // Auto-compare on load
     compareBtn.click();
