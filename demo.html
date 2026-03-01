@@ -273,51 +273,25 @@
     const nextBtn = document.getElementById('nextBtn');
     const navInfo = document.getElementById('navInfo');
 
-    // Sample data
+    // Sample data: compact, shows all diff types on one screen
     const sampleA = {
       browser: "Chrome",
       version: "120.0.6099.130",
       os: "Windows 10",
-      gpu: {
-        vendor: "NVIDIA",
-        model: "GeForce RTX 3060",
-        driver: "31.0.15.3623"
-      },
-      flags: {
-        "hardware-acceleration": true,
-        webgl: true,
-        vulkan: false
-      },
-      extensions: [
-        { id: "ext-001", name: "uBlock Origin", enabled: true },
-        { id: "ext-002", name: "LastPass", enabled: true },
-        { id: "ext-003", name: "React DevTools", enabled: false }
-      ],
-      network: { proxy: "none", dns: "system" }
+      gpu: { vendor: "NVIDIA", driver: "31.0.15.3623" },
+      flags: { "hardware-acceleration": true, webgl: true },
+      proxy: "none",
+      dns: "system"
     };
 
     const sampleB = {
       browser: "Chrome",
       version: "120.0.6099.131",
       os: "Windows 10",
-      gpu: {
-        vendor: "NVIDIA",
-        model: "GeForce RTX 3060",
-        driver: "31.0.15.3667"
-      },
-      flags: {
-        "hardware-acceleration": false,
-        webgl: true,
-        vulkan: false,
-        "experimental-canvas": true
-      },
-      extensions: [
-        { id: "ext-001", name: "uBlock Origin", enabled: true },
-        { id: "ext-002", name: "LastPass", enabled: false },
-        { id: "ext-004", name: "Grammarly", enabled: true }
-      ],
-      network: { proxy: "http://proxy.corp:8080", dns: "custom", doh: true },
-      experiments: ["feature-a", "feature-b"]
+      gpu: { vendor: "NVIDIA", driver: "31.0.15.3667" },
+      flags: { "hardware-acceleration": false, webgl: true, vulkan: false },
+      proxy: "http://proxy.corp:8080",
+      experiments: ["feature-a"]
     };
 
     jsonAEl.value = JSON.stringify(sampleA, null, 2);
