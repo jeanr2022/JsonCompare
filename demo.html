@@ -132,6 +132,8 @@
     }
 
     .stats-bar span { margin-right: 4px; }
+    .stats-bar .stat-clickable { cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+    .stats-bar .stat-clickable:hover { background: #eaeef2; }
     .stats-bar .stat-equal { color: #1a7f37; }
     .stats-bar .stat-changed { color: #9a6700; }
     .stats-bar .stat-added { color: #0969da; }
@@ -215,6 +217,7 @@
       .options { color: #7d8590; }
       .options input[type="number"] { background: #161b22; color: #e6edf3; border-color: #30363d; }
       .stats-bar { color: #7d8590; }
+      .stats-bar .stat-clickable:hover { background: #21262d; }
       .error { background: #2d1215; color: #f85149; }
       #output { background: #0d1117; border-color: #30363d; }
       .loading-overlay { background: rgba(13,17,23,0.85); }
@@ -269,6 +272,9 @@
     let diffIndices = [];  // indices of non-equal lines
     let currentDiffPos = -1;
     let useWorker = true;
+    let typeIndices = { equal: [], changed: [], added: [], removed: [] };
+    let typePos = { equal: -1, changed: -1, added: -1, removed: -1 };
+    let lastLinePairs = [];
 
     const jsonAEl = document.getElementById('jsonA');
     const jsonBEl = document.getElementById('jsonB');
@@ -344,18 +350,34 @@
       const s = stats;
       statsBar.innerHTML =
         '<span><strong>' + s.total + '</strong> lines total</span>' +
-        '<span class="stat-equal"><strong>' + s.equal + '</strong> equal</span>' +
-        '<span class="stat-changed"><strong>' + s.changed + '</strong> changed</span>' +
-        '<span class="stat-added"><strong>' + s.added + '</strong> added</span>' +
-        '<span class="stat-removed"><strong>' + s.removed + '</strong> removed</span>';
+        '<span class="stat-equal stat-clickable" data-type="equal" title="Click to jump through equal lines"><strong>' + s.equal + '</strong> equal</span>' +
+        '<span class="stat-changed stat-clickable" data-type="changed" title="Click to jump through changed lines"><strong>' + s.changed + '</strong> changed</span>' +
+        '<span class="stat-added stat-clickable" data-type="added" title="Click to jump through added lines"><strong>' + s.added + '</strong> added</span>' +
+        '<span class="stat-removed stat-clickable" data-type="removed" title="Click to jump through removed lines"><strong>' + s.removed + '</strong> removed</span>';
       statsBar.style.display = 'flex';
 
-      // Build diff index for navigation
+      // Build indices per type
+      lastLinePairs = linePairs;
+      typeIndices = { equal: [], changed: [], added: [], removed: [] };
+      typePos = { equal: -1, changed: -1, added: -1, removed: -1 };
       diffIndices = [];
       for (let i = 0; i < linePairs.length; i++) {
-        if (linePairs[i].type !== 'equal') diffIndices.push(i);
+        const t = linePairs[i].type;
+        if (typeIndices[t]) typeIndices[t].push(i);
+        if (t !== 'equal') diffIndices.push(i);
       }
       currentDiffPos = diffIndices.length > 0 ? 0 : -1;
+
+      // Click handlers on stat spans
+      statsBar.querySelectorAll('.stat-clickable').forEach(span => {
+        span.addEventListener('click', () => {
+          const type = span.dataset.type;
+          const indices = typeIndices[type];
+          if (!indices || indices.length === 0 || !renderer) return;
+          typePos[type] = (typePos[type] + 1) % indices.length;
+          renderer.scrollContainer.scrollTop = indices[typePos[type]] * renderer.rowHeight;
+        });
+      });
 
       // Virtual scroll renderer
       outputEl.innerHTML = '';
