@@ -2,14 +2,30 @@
   "name": "json-compare",
   "version": "1.0.0",
   "description": "Zero-dependency side-by-side JSON diff with syntax highlighting, line numbers, and collapsible sections.",
+  "author": "Jean-Pierre Regente",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeanr2022/JsonCompare"
+  },
   "type": "module",
   "main": "./src/index.js",
   "types": "./types.d.ts",
+  "files": [
+    "src/",
+    "style/",
+    "types.d.ts",
+    "LICENSE",
+    "README.md"
+  ],
   "exports": {
     ".": "./src/index.js",
     "./virtual-scroll": "./src/virtual-scroll.js",
     "./worker": "./src/worker.js",
     "./style.css": "./style/json-compare.css"
+  },
+  "engines": {
+    "node": ">=16"
   },
   "scripts": {
     "start": "node server.js",
@@ -22,6 +38,5 @@
     "side-by-side",
     "chromium",
     "diagnostics"
-  ],
-  "license": "MIT"
+  ]
 }
