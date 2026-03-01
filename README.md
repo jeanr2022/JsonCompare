@@ -4,6 +4,8 @@ Zero-dependency, side-by-side JSON diff module for Node.js and the browser.
 
 Built for comparing Chromium diagnostic JSON exports (working vs. broken scenarios), but works with any JSON data.
 
+![JSON Compare screenshot](docs/screenshot.png)
+
 ## Features
 
 - **Side-by-side view**: left/right panes with aligned lines
