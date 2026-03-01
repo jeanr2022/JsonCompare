@@ -163,6 +163,21 @@ Each line pair represents one row in the side-by-side view:
 }
 ```
 
+### Color Legend
+
+The module's CSS (`style/json-compare.css`) assigns a distinct background color to each line type:
+
+| Type | Light Mode | Dark Mode | Meaning |
+|---|---|---|---|
+| equal | white | `#0d1117` | Identical on both sides |
+| changed | yellow `#fff8c5` | `#2e2a10` | Same key, different value |
+| removed | red `#ffebe9` | `#2d1215` | Present only on the left side |
+| added | blue `#ddf4ff` | `#121d2f` | Present only on the right side |
+
+Structural braces and brackets (`{`, `}`, `[`, `]`) are not counted in the stats because they always match and would inflate the "equal" number.
+
+The stat labels in the demo page use matching text colors (green for equal, yellow for changed, blue for added, red for removed) defined in `demo.html`, not in the module CSS.
+
 ### Advanced Exports
 
 For custom pipelines, all building blocks are individually exported:
