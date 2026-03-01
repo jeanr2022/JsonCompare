@@ -446,14 +446,18 @@
           options: { sortKeys }
         });
       } else {
-        // Main-thread fallback
-        try {
-          const result = compare(a, b, { sortKeys });
-          handleResult(result.linePairs, result.stats);
-        } catch (err) {
-          compareBtn.disabled = false;
-          showError(err.message);
-        }
+        // Main-thread fallback — defer one frame so the browser can paint the spinner
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            try {
+              const result = compare(a, b, { sortKeys });
+              handleResult(result.linePairs, result.stats);
+            } catch (err) {
+              compareBtn.disabled = false;
+              showError(err.message);
+            }
+          }, 0);
+        });
       }
     });
 
