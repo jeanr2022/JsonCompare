@@ -378,15 +378,30 @@ export function alignLines(diffTree) {
 }
 
 /**
+ * Return true when a line is purely a structural brace / bracket
+ * (e.g. `{`, `}`, `[`, `]`, `},`) with no actual content.
+ * These are excluded from "equal" counts so that two completely
+ * different objects don't show misleading "2 equal" for the braces.
+ */
+function isStructuralLine(text) {
+  if (!text) return false;
+  return /^\s*[{}\[\]],?\s*$/.test(text);
+}
+
+/**
  * Compute summary statistics from line pairs.
+ * Structural brace / bracket lines are excluded from the counts
+ * so they don't inflate the "equal" number.
  *
  * @param {LinePair[]} linePairs
  * @returns {{ equal: number, added: number, removed: number, changed: number, total: number }}
  */
 export function computeStats(linePairs) {
-  const stats = { equal: 0, added: 0, removed: 0, changed: 0, total: linePairs.length };
+  const stats = { equal: 0, added: 0, removed: 0, changed: 0, total: 0 };
   for (const pair of linePairs) {
+    if (pair.type === 'equal' && isStructuralLine(pair.left)) continue;
     stats[pair.type]++;
+    stats.total++;
   }
   return stats;
 }

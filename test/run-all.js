@@ -326,7 +326,8 @@ describe('computeStats', () => {
     assertOk(stats.changed > 0);
     assertOk(stats.removed > 0);
     assertOk(stats.added > 0);
-    assertEqual(stats.total, lines.length);
+    // Structural braces are excluded, so total <= linePairs.length
+    assertOk(stats.total <= lines.length);
     assertEqual(stats.equal + stats.added + stats.removed + stats.changed, stats.total);
   });
 });
@@ -440,7 +441,7 @@ describe('compare (public API)', () => {
 
   it('returns correct stats', () => {
     const result = compare({ a: 1, b: 2 }, { a: 1, b: 3 });
-    assertEqual(result.stats.total, result.linePairs.length);
+    assertOk(result.stats.total <= result.linePairs.length);
     assertOk(result.stats.equal > 0);
     assertOk(result.stats.changed > 0);
   });

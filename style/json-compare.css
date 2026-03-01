@@ -95,7 +95,7 @@
 }
 
 .jc-added {
-  background: #dafbe1;
+  background: #ddf4ff;
 }
 
 .jc-removed {
@@ -112,8 +112,8 @@
 
 /* Row-level highlights for left/right context */
 .jc-row-added .jc-line-num {
-  background: #ccffd8;
-  color: #116329;
+  background: #b6e3ff;
+  color: #0550ae;
 }
 
 .jc-row-removed .jc-line-num {
@@ -245,7 +245,7 @@ details[open] > .jc-fold-summary {
   }
 
   .jc-added {
-    background: #12261e;
+    background: #121d2f;
   }
 
   .jc-removed {
@@ -261,8 +261,8 @@ details[open] > .jc-fold-summary {
   }
 
   .jc-row-added .jc-line-num {
-    background: #122d1f;
-    color: #3fb950;
+    background: #12253d;
+    color: #58a6ff;
   }
 
   .jc-row-removed .jc-line-num {
