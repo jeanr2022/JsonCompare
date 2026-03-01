@@ -13,6 +13,9 @@
       background: #f0f2f5;
       color: #1f2328;
       padding: 24px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
 
     h1 {
@@ -22,14 +25,14 @@
 
     .subtitle {
       color: #656d76;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       font-size: 14px;
     }
 
     .input-area {
       display: flex;
       gap: 16px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .input-area > div {
@@ -46,7 +49,7 @@
 
     textarea {
       width: 100%;
-      height: 260px;
+      height: 200px;
       font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
       font-size: 12px;
       padding: 10px;
@@ -65,13 +68,14 @@
     .toolbar {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
     }
 
     button {
-      padding: 8px 20px;
-      font-size: 14px;
+      padding: 8px 16px;
+      font-size: 13px;
       font-weight: 600;
       border: none;
       border-radius: 6px;
@@ -80,13 +84,19 @@
       color: white;
     }
 
-    button:hover {
-      background: #0550ae;
+    button:hover { background: #0550ae; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #eaeef2;
+      color: #1f2328;
     }
+
+    .btn-secondary:hover { background: #d0d7de; }
 
     .options {
       display: flex;
-      gap: 16px;
+      gap: 14px;
       align-items: center;
       font-size: 13px;
       color: #656d76;
@@ -107,23 +117,60 @@
       font-size: 13px;
     }
 
-    .stats {
+    .stats-bar {
       font-size: 13px;
       color: #656d76;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .stats span {
-      margin-right: 12px;
-    }
-
-    .stats .stat-equal { color: #1a7f37; }
-    .stats .stat-changed { color: #9a6700; }
-    .stats .stat-added { color: #0969da; }
-    .stats .stat-removed { color: #cf222e; }
+    .stats-bar span { margin-right: 4px; }
+    .stats-bar .stat-equal { color: #1a7f37; }
+    .stats-bar .stat-changed { color: #9a6700; }
+    .stats-bar .stat-added { color: #0969da; }
+    .stats-bar .stat-removed { color: #cf222e; }
 
     #output {
-      margin-top: 8px;
+      flex: 1;
+      min-height: 200px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      background: #fff;
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      gap: 12px;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #d0d7de;
+      border-top-color: #0969da;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 13px;
+      color: #656d76;
     }
 
     .error {
@@ -132,7 +179,22 @@
       padding: 12px;
       border-radius: 6px;
       font-size: 13px;
-      margin-top: 8px;
+      margin: 12px;
+    }
+
+    .nav-info {
+      font-size: 12px;
+      color: #656d76;
+      margin-left: 4px;
+    }
+
+    /* Ensure virtual scroll fills the output container */
+    .jc-vscroll-host {
+      height: 100%;
+    }
+
+    .jc-vscroll-scroll {
+      height: 100% !important;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -143,10 +205,16 @@
       .input-area label { color: #e6edf3; }
       button { background: #238636; }
       button:hover { background: #2ea043; }
+      .btn-secondary { background: #21262d; color: #e6edf3; }
+      .btn-secondary:hover { background: #30363d; }
       .options { color: #7d8590; }
       .options input[type="number"] { background: #161b22; color: #e6edf3; border-color: #30363d; }
-      .stats { color: #7d8590; }
+      .stats-bar { color: #7d8590; }
       .error { background: #2d1215; color: #f85149; }
+      #output { background: #0d1117; border-color: #30363d; }
+      .loading-overlay { background: rgba(13,17,23,0.85); }
+      .spinner { border-color: #30363d; border-top-color: #58a6ff; }
+      .loading-text { color: #7d8590; }
     }
   </style>
 </head>
@@ -168,11 +236,10 @@
 
   <div class="toolbar">
     <button id="compareBtn">Compare</button>
+    <button id="prevBtn" class="btn-secondary" disabled title="Previous change (↑)">&#9650; Prev</button>
+    <button id="nextBtn" class="btn-secondary" disabled title="Next change (↓)">&#9660; Next</button>
+    <span id="navInfo" class="nav-info"></span>
     <div class="options">
-      <label>
-        Fold threshold:
-        <input type="number" id="foldThreshold" value="5" min="0" max="9999">
-      </label>
       <label>
         <input type="checkbox" id="syntaxHL" checked>
         Syntax highlighting
@@ -184,13 +251,29 @@
     </div>
   </div>
 
-  <div id="statsBar" class="stats" style="display: none;"></div>
+  <div id="statsBar" class="stats-bar" style="display: none;"></div>
   <div id="output"></div>
 
   <script type="module">
-    import { compareAndRender } from './src/index.js';
+    import { VirtualScrollRenderer } from './src/virtual-scroll.js';
+    import { compare } from './src/index.js';
 
-    // Load sample data
+    // State
+    let renderer = null;
+    let diffIndices = [];  // indices of non-equal lines
+    let currentDiffPos = -1;
+    let useWorker = true;
+
+    const jsonAEl = document.getElementById('jsonA');
+    const jsonBEl = document.getElementById('jsonB');
+    const outputEl = document.getElementById('output');
+    const statsBar = document.getElementById('statsBar');
+    const compareBtn = document.getElementById('compareBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const navInfo = document.getElementById('navInfo');
+
+    // Sample data
     const sampleA = {
       browser: "Chrome",
       version: "120.0.6099.130",
@@ -237,59 +320,172 @@
       experiments: ["feature-a", "feature-b"]
     };
 
-    const jsonAEl = document.getElementById('jsonA');
-    const jsonBEl = document.getElementById('jsonB');
-
-    // Pre-fill with sample data
     jsonAEl.value = JSON.stringify(sampleA, null, 2);
     jsonBEl.value = JSON.stringify(sampleB, null, 2);
 
-    document.getElementById('compareBtn').addEventListener('click', () => {
-      const outputEl = document.getElementById('output');
-      const statsBar = document.getElementById('statsBar');
+    // Worker — with fallback to main thread if module workers not supported
+    let worker = null;
+    try {
+      worker = new Worker('./src/worker.js', { type: 'module' });
+    } catch (err) {
+      console.warn('Module Worker not supported, using main-thread fallback:', err);
+      useWorker = false;
+    }
 
-      try {
-        const a = jsonAEl.value.trim();
-        const b = jsonBEl.value.trim();
+    function showLoading() {
+      outputEl.innerHTML =
+        '<div class="loading-overlay">' +
+        '  <div class="spinner"></div>' +
+        '  <div class="loading-text">Comparing...</div>' +
+        '</div>';
+    }
 
-        if (!a || !b) {
-          outputEl.innerHTML = '<div class="error">Please paste JSON in both fields.</div>';
-          statsBar.style.display = 'none';
+    function showError(msg) {
+      outputEl.innerHTML = '<div class="error">Error: ' + msg + '</div>';
+      statsBar.style.display = 'none';
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+      navInfo.textContent = '';
+    }
+
+    function updateNavInfo() {
+      if (diffIndices.length === 0) {
+        navInfo.textContent = 'No differences';
+      } else {
+        navInfo.textContent = (currentDiffPos + 1) + ' / ' + diffIndices.length + ' changes';
+      }
+    }
+
+    /** Handle comparison result (shared by worker and main-thread paths) */
+    function handleResult(linePairs, stats) {
+      compareBtn.disabled = false;
+
+      // Show stats
+      const s = stats;
+      statsBar.innerHTML =
+        '<span><strong>' + s.total + '</strong> lines total</span>' +
+        '<span class="stat-equal"><strong>' + s.equal + '</strong> equal</span>' +
+        '<span class="stat-changed"><strong>' + s.changed + '</strong> changed</span>' +
+        '<span class="stat-added"><strong>' + s.added + '</strong> added</span>' +
+        '<span class="stat-removed"><strong>' + s.removed + '</strong> removed</span>';
+      statsBar.style.display = 'flex';
+
+      // Build diff index for navigation
+      diffIndices = [];
+      for (let i = 0; i < linePairs.length; i++) {
+        if (linePairs[i].type !== 'equal') diffIndices.push(i);
+      }
+      currentDiffPos = diffIndices.length > 0 ? 0 : -1;
+
+      // Virtual scroll renderer
+      outputEl.innerHTML = '';
+      if (renderer) renderer.destroy();
+
+      const syntaxHighlight = document.getElementById('syntaxHL').checked;
+      renderer = new VirtualScrollRenderer(outputEl, { syntaxHighlight });
+      renderer.setData(linePairs);
+
+      // Enable nav buttons
+      prevBtn.disabled = diffIndices.length === 0;
+      nextBtn.disabled = diffIndices.length === 0;
+      updateNavInfo();
+
+      // Jump to first difference
+      if (diffIndices.length > 0) {
+        renderer.scrollToNextChange(0);
+      }
+    }
+
+    if (worker) {
+      worker.onmessage = (e) => {
+        if (e.data.error) {
+          compareBtn.disabled = false;
+          showError(e.data.error);
           return;
         }
+        handleResult(e.data.linePairs, e.data.stats);
+      };
 
-        // Validate JSON
-        JSON.parse(a);
-        JSON.parse(b);
+      worker.onerror = (err) => {
+        console.warn('Worker error, falling back to main thread:', err);
+        useWorker = false;
+        // Re-trigger the comparison on the main thread
+        compareBtn.disabled = false;
+        compareBtn.click();
+      };
+    }
 
-        const foldThreshold = parseInt(document.getElementById('foldThreshold').value, 10);
-        const syntaxHighlight = document.getElementById('syntaxHL').checked;
-        const sortKeys = document.getElementById('sortKeys').checked;
+    compareBtn.addEventListener('click', () => {
+      const a = jsonAEl.value.trim();
+      const b = jsonBEl.value.trim();
 
-        const result = compareAndRender(a, b, {
-          foldThreshold: isNaN(foldThreshold) ? 5 : foldThreshold,
-          syntaxHighlight,
-          sortKeys
+      if (!a || !b) {
+        showError('Please paste JSON in both fields.');
+        return;
+      }
+
+      // Validate JSON locally (fast, on main thread)
+      try { JSON.parse(a); } catch (err) {
+        showError('JSON A is invalid: ' + err.message);
+        return;
+      }
+      try { JSON.parse(b); } catch (err) {
+        showError('JSON B is invalid: ' + err.message);
+        return;
+      }
+
+      const sortKeys = document.getElementById('sortKeys').checked;
+
+      compareBtn.disabled = true;
+      showLoading();
+
+      if (useWorker && worker) {
+        worker.postMessage({
+          jsonA: a,
+          jsonB: b,
+          options: { sortKeys }
         });
-
-        const s = result.stats;
-        statsBar.innerHTML =
-          `<span><strong>${s.total}</strong> lines total</span>` +
-          `<span class="stat-equal"><strong>${s.equal}</strong> equal</span>` +
-          `<span class="stat-changed"><strong>${s.changed}</strong> changed</span>` +
-          `<span class="stat-added"><strong>${s.added}</strong> added</span>` +
-          `<span class="stat-removed"><strong>${s.removed}</strong> removed</span>`;
-        statsBar.style.display = 'block';
-
-        outputEl.innerHTML = result.html;
-      } catch (err) {
-        outputEl.innerHTML = `<div class="error">Error: ${err.message}</div>`;
-        statsBar.style.display = 'none';
+      } else {
+        // Main-thread fallback
+        try {
+          const result = compare(a, b, { sortKeys });
+          handleResult(result.linePairs, result.stats);
+        } catch (err) {
+          compareBtn.disabled = false;
+          showError(err.message);
+        }
       }
     });
 
-    // Auto-compare on load with sample data
-    document.getElementById('compareBtn').click();
+    // Navigation
+    prevBtn.addEventListener('click', () => {
+      if (diffIndices.length === 0 || !renderer) return;
+      currentDiffPos = Math.max(0, currentDiffPos - 1);
+      renderer.scrollContainer.scrollTop = diffIndices[currentDiffPos] * renderer.rowHeight;
+      updateNavInfo();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (diffIndices.length === 0 || !renderer) return;
+      currentDiffPos = Math.min(diffIndices.length - 1, currentDiffPos + 1);
+      renderer.scrollContainer.scrollTop = diffIndices[currentDiffPos] * renderer.rowHeight;
+      updateNavInfo();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+      if (e.key === 'ArrowUp' || e.key === 'k') {
+        e.preventDefault();
+        prevBtn.click();
+      } else if (e.key === 'ArrowDown' || e.key === 'j') {
+        e.preventDefault();
+        nextBtn.click();
+      }
+    });
+
+    // Auto-compare on load
+    compareBtn.click();
   </script>
 </body>
 </html>

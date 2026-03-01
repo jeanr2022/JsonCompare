@@ -6,6 +6,8 @@
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
+    "./virtual-scroll": "./src/virtual-scroll.js",
+    "./worker": "./src/worker.js",
     "./style.css": "./style/json-compare.css"
   },
   "scripts": {

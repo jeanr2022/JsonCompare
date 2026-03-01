@@ -159,6 +159,26 @@
   color: #1f2328;
 }
 
+/* ---------- Virtual Scroll ---------- */
+
+.jc-vscroll-host {
+  position: relative;
+  overflow: hidden;
+}
+
+.jc-vscroll-scroll {
+  overflow: auto;
+  height: 100%;
+  position: relative;
+}
+
+.jc-vscroll-viewport {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
 /* ---------- Fold / Collapse ---------- */
 
 .jc-fold-row {
