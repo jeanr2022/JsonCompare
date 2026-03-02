@@ -47,25 +47,57 @@
       color: #1f2328;
     }
 
-    textarea {
-      width: 100%;
+    .textarea-wrapper {
+      display: flex;
       height: 200px;
-      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
-      font-size: 12px;
-      padding: 10px;
       border: 1px solid #d0d7de;
       border-radius: 6px;
-      resize: vertical;
+      overflow: hidden;
       background: #fff;
-      color: #1f2328;
+      resize: vertical;
     }
 
-    textarea:focus {
+    .textarea-wrapper:focus-within {
       outline: 2px solid #0969da;
       border-color: #0969da;
     }
 
-    .drop-zone.drag-over textarea {
+    .line-numbers {
+      width: 38px;
+      min-width: 38px;
+      padding: 10px 6px 10px 6px;
+      background: #f6f8fa;
+      border-right: 1px solid #d0d7de;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      color: #8b949e;
+      text-align: right;
+      overflow: hidden;
+      user-select: none;
+      white-space: pre;
+    }
+
+    textarea {
+      flex: 1;
+      height: 100%;
+      font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.4;
+      padding: 10px;
+      border: none;
+      resize: none;
+      background: #fff;
+      color: #1f2328;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    textarea:focus {
+      outline: none;
+    }
+
+    .drop-zone.drag-over .textarea-wrapper {
       border-color: #0969da;
       background: #ddf4ff;
     }
@@ -206,8 +238,10 @@
 
     @media (prefers-color-scheme: dark) {
       body { background: #0d1117; color: #e6edf3; }
-      textarea { background: #161b22; color: #e6edf3; border-color: #30363d; }
-      textarea:focus { outline-color: #58a6ff; border-color: #58a6ff; }
+      textarea { background: #161b22; color: #e6edf3; }
+      .textarea-wrapper { background: #161b22; border-color: #30363d; }
+      .line-numbers { background: #0d1117; border-right-color: #30363d; color: #484f58; }
+      .textarea-wrapper:focus-within { outline-color: #58a6ff; border-color: #58a6ff; }
       .subtitle { color: #7d8590; }
       .input-area label { color: #e6edf3; }
       button { background: #238636; }
@@ -223,7 +257,7 @@
       .loading-overlay { background: rgba(13,17,23,0.85); }
       .spinner { border-color: #30363d; border-top-color: #58a6ff; }
       .loading-text { color: #7d8590; }
-      .drop-zone.drag-over textarea { border-color: #58a6ff; background: #1a2332; }
+      .drop-zone.drag-over .textarea-wrapper { border-color: #58a6ff; background: #1a2332; }
     }
   </style>
 </head>
@@ -235,11 +269,17 @@
   <div class="input-area">
     <div class="drop-zone" id="dropZoneA">
       <label for="jsonA">JSON A (Left, e.g. working config)</label>
-      <textarea id="jsonA" spellcheck="false" placeholder="Paste or drop a .json file here..."></textarea>
+      <div class="textarea-wrapper">
+        <div class="line-numbers" id="lineNumA">1</div>
+        <textarea id="jsonA" spellcheck="false" wrap="off" placeholder="Paste or drop a .json file here..."></textarea>
+      </div>
     </div>
     <div class="drop-zone" id="dropZoneB">
       <label for="jsonB">JSON B (Right, e.g. broken config)</label>
-      <textarea id="jsonB" spellcheck="false" placeholder="Paste or drop a .json file here..."></textarea>
+      <div class="textarea-wrapper">
+        <div class="line-numbers" id="lineNumB">1</div>
+        <textarea id="jsonB" spellcheck="false" wrap="off" placeholder="Paste or drop a .json file here..."></textarea>
+      </div>
     </div>
   </div>
 
@@ -256,6 +296,10 @@
       <label>
         <input type="checkbox" id="sortKeys">
         Sort keys
+      </label>
+      <label>
+        <input type="checkbox" id="beautify" checked>
+        Beautify JSON
       </label>
     </div>
   </div>
@@ -278,6 +322,67 @@
 
     const jsonAEl = document.getElementById('jsonA');
     const jsonBEl = document.getElementById('jsonB');
+    const lineNumAEl = document.getElementById('lineNumA');
+    const lineNumBEl = document.getElementById('lineNumB');
+    const beautifyEl = document.getElementById('beautify');
+
+    /** Try to beautify a JSON string; returns original if not valid JSON */
+    function tryBeautify(text) {
+      if (!beautifyEl.checked) return text;
+      try {
+        return JSON.stringify(JSON.parse(text), null, 2);
+      } catch {
+        return text;
+      }
+    }
+
+    /** Update line number gutter for a textarea */
+    function updateLineNumbers(textarea, gutterEl) {
+      const lineCount = textarea.value.split('\n').length;
+      const nums = [];
+      for (let i = 1; i <= lineCount; i++) nums.push(i);
+      gutterEl.textContent = nums.join('\n');
+    }
+
+    /** Sync scroll between textarea and its line-number gutter */
+    function syncScroll(textarea, gutterEl) {
+      gutterEl.scrollTop = textarea.scrollTop;
+    }
+
+    // Wire up line numbers + scroll sync
+    [{ ta: jsonAEl, gutter: lineNumAEl }, { ta: jsonBEl, gutter: lineNumBEl }].forEach(({ ta, gutter }) => {
+      ta.addEventListener('input', () => updateLineNumbers(ta, gutter));
+      ta.addEventListener('scroll', () => syncScroll(ta, gutter));
+    });
+
+    // Handle paste — beautify the pasted content
+    function handlePaste(textarea, gutterEl) {
+      textarea.addEventListener('paste', (e) => {
+        if (!beautifyEl.checked) return; // let default happen
+        const pasted = e.clipboardData.getData('text');
+        if (!pasted) return;
+        e.preventDefault();
+        textarea.value = tryBeautify(pasted);
+        updateLineNumbers(textarea, gutterEl);
+      });
+    }
+    handlePaste(jsonAEl, lineNumAEl);
+    handlePaste(jsonBEl, lineNumBEl);
+
+    // When beautify is toggled on, re-format existing content
+    beautifyEl.addEventListener('change', () => {
+      if (beautifyEl.checked) {
+        [{ ta: jsonAEl, gutter: lineNumAEl }, { ta: jsonBEl, gutter: lineNumBEl }].forEach(({ ta, gutter }) => {
+          if (ta.value.trim()) {
+            try {
+              ta.value = JSON.stringify(JSON.parse(ta.value), null, 2);
+              updateLineNumbers(ta, gutter);
+            } catch { /* not valid JSON, leave as-is */ }
+          }
+        });
+      }
+    });
+
     const outputEl = document.getElementById('output');
     const statsBar = document.getElementById('statsBar');
     const compareBtn = document.getElementById('compareBtn');
@@ -308,6 +413,8 @@
 
     jsonAEl.value = JSON.stringify(sampleA, null, 2);
     jsonBEl.value = JSON.stringify(sampleB, null, 2);
+    updateLineNumbers(jsonAEl, lineNumAEl);
+    updateLineNumbers(jsonBEl, lineNumBEl);
 
     // Worker — with fallback to main thread if module workers not supported
     let worker = null;
@@ -505,7 +612,9 @@
         if (!file) return;
         const reader = new FileReader();
         reader.onload = () => {
-          textareaEl.value = reader.result;
+          textareaEl.value = tryBeautify(reader.result);
+          const gutterEl = textareaEl === jsonAEl ? lineNumAEl : lineNumBEl;
+          updateLineNumbers(textareaEl, gutterEl);
           // Auto-compare if both fields have content
           if (jsonAEl.value.trim() && jsonBEl.value.trim()) compareBtn.click();
         };
